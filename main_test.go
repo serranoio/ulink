@@ -63,8 +63,8 @@ func TestFindStringInFile(t *testing.T) {
 }
 
 func TestCreateRelativePath(t *testing.T) {
-	root := "/Users/davidserrano/Documents/dev/projects/bookera-rewrite/ui"
-	path := "/Users/davidserrano/Documents/dev/projects/bookera-rewrite/ui/src/components/example.go"
+	root := "/Users/davidserrano/Documents/dev/projects/bo../okera-rewrite/ui"
+	path := "/Users/davidserrano/Documents/dev/projects/bo../okera-rewrite/ui/src/components/example.go"
 
 	expected := "../../../"
 	result := createRelativePath(root, path)
@@ -102,7 +102,7 @@ func TestWalkThroughFiles(t *testing.T) {
 	}
 
 	searchString := nodeModule
-	localPath := "../../bookera-extensions-hub/packages/shared/module/module"
+	localPath := "../../bo../okera-extensions-hub/packages/shared/module/module"
 
 	err = walkThroughFiles(tempDir, searchString, localPath)
 	if err != nil {
@@ -115,7 +115,7 @@ func TestWalkThroughFiles(t *testing.T) {
 		t.Fatalf("Failed to read updated file1: %v", err)
 	}
 
-	expectedContent := "This is a test file with ../../../bookera-extensions-hub/packages/shared/module/module in it."
+	expectedContent := "This is a test file with ../../../bo../okera-extensions-hub/packages/shared/module/module in it."
 	if string(updatedContent) != expectedContent {
 		t.Errorf("Expected file content to be '%s', but got '%s'", expectedContent, string(updatedContent))
 	}
@@ -126,7 +126,7 @@ func TestWalkThroughFiles(t *testing.T) {
 		t.Fatalf("Failed to read updated file1: %v", err)
 	}
 
-	expectedContent = "This is a test file with ../../../../../bookera-extensions-hub/packages/shared/module/module in it."
+	expectedContent = "This is a test file with ../../../../../bo../okera-extensions-hub/packages/shared/module/module in it."
 	if string(updatedContent) != expectedContent {
 		t.Errorf("Expected file content to be '%s', but got '%s'", expectedContent, string(updatedContent))
 	}

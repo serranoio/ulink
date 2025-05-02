@@ -49,3 +49,7 @@ import { Square } from '../../../../library/src/components/Square/Square.tsx
 ```
 import { Square } from '../../../../library/src/components/Square/Square.tsx
 ```
+
+## Usage
+
+1. Run at root

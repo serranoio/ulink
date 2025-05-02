@@ -30,6 +30,7 @@ func findStringInFile(filePath string, searchString string, replacePath string) 
 		return false, nil
 	}
 	os.WriteFile(filePath, []byte(newString), 0644)
+	fmt.Println(blue.Render(fmt.Sprintf("file: %s, rewriting %s -> %s", filePath, searchString, replacePath)))
 
 	if replacedFiles != nil {
 		replacedFiles[filePath] = replacePath
@@ -93,19 +94,10 @@ func savePathsToFile() error {
 	return nil
 }
 
-func switchToRelativePath() {
+func switchToRelativePath(nodeModules, localPath string) {
 	wd, _ := os.Getwd()
 
-	// if len(os.Args) < 3 {
-	// 	fmt.Println("Usage: go run main.go <searchString> <localPath>")
-	// 	return
-	// }
-	// searchString := os.Args[1]
-	// localPath := os.Args[2]
-	searchString := "@serranolabs.io/module/module"
-	localPath := "../../bookera-extensions-hub/packages/shared/module/module"
-
-	if err := walkThroughFiles(wd, searchString, localPath); err != nil {
+	if err := walkThroughFiles(wd, nodeModules, localPath); err != nil {
 		fmt.Printf("Error walking through files: %v\n", err)
 	}
 
@@ -136,9 +128,10 @@ func relativePathToOriginalPath(contents map[string]string, nodeModule string) [
 }
 
 func switchBackToOriginalPath() (bool, error) {
-	fmt.Println(blue.Render("Switching back to the original path..."))
 
-	if file, err := os.OpenFile(replacedFilesFilePath, os.O_RDWR|os.O_CREATE, 0755); file != nil {
+	if file, err := os.OpenFile(replacedFilesFilePath, os.O_RDWR, 0755); file != nil {
+		fmt.Println(blue.Render("Detected .yaml file, switching back to the original path..."))
+
 		if err != nil {
 			fmt.Print(red.Render(fmt.Sprintf("you f'ed up your file bro, %s", err.Error())))
 			return true, err
@@ -156,14 +149,16 @@ func switchBackToOriginalPath() (bool, error) {
 			return true, err
 		}
 
-		if len(os.Args) < 1 {
-			fmt.Println("To return your files back to normal: go run <executable> <node_module>")
+		if len(os.Args) <= 1 {
+			fmt.Println(red.Render("To return your files back to normal: go run <executable> <node_module>"))
 			return true, nil
 		}
 
 		nodeModule := os.Args[1]
 
 		relativePathToOriginalPath(obj, nodeModule)
+
+		os.Remove(replacedFilesFilePath)
 
 		return true, nil
 	}
@@ -179,6 +174,14 @@ func main() {
 		return
 	}
 
-	switchToRelativePath()
+	if len(os.Args) < 3 {
+		fmt.Println("Usage: go run main.go <searchString> <localPath>")
+		return
+	}
+	nodeModules := os.Args[1]
+	localPath := os.Args[2]
+	fmt.Println(blue.Render(fmt.Sprintf("Switching %s to %s", nodeModules, localPath)))
+
+	switchToRelativePath(nodeModules, localPath)
 
 }
