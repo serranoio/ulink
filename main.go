@@ -16,6 +16,7 @@ var replacedFiles map[string]string
 const replacedFilesFilePath = ".replaced-files.yaml"
 
 var blue = lipgloss.NewStyle().Foreground(lipgloss.Color("#3498db")).Bold(true)
+var green = lipgloss.NewStyle().Foreground(lipgloss.Color("#2ecc71")).Bold(true)
 var red = lipgloss.NewStyle().Foreground(lipgloss.Color("#ff0000")).Bold(true)
 
 func findStringInFile(filePath string, searchString string, replacePath string) (bool, error) {
@@ -30,7 +31,6 @@ func findStringInFile(filePath string, searchString string, replacePath string) 
 		return false, nil
 	}
 	os.WriteFile(filePath, []byte(newString), 0644)
-	fmt.Println(blue.Render(fmt.Sprintf("file: %s, rewriting %s -> %s", filePath, searchString, replacePath)))
 
 	if replacedFiles != nil {
 		replacedFiles[filePath] = replacePath
@@ -53,8 +53,9 @@ func createRelativePath(root, path string) string {
 
 func walkThroughFiles(root string, searchString string, localPath string) error {
 	replacedFiles = make(map[string]string)
-	found := false
-	return filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+
+	matches := 0
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -66,17 +67,25 @@ func walkThroughFiles(root string, searchString string, localPath string) error 
 			return nil
 		}
 
-		found, err = findStringInFile(path, searchString, createRelativePath(root, path)+localPath)
+		found, err := findStringInFile(path, searchString, createRelativePath(root, path)+localPath)
 		if err != nil {
 			return err
 		}
 
 		if found {
 			fmt.Println(blue.Render((fmt.Sprintf("file: %s replaced %s with %s", info.Name(), searchString, localPath))))
+			matches++
 		}
 
 		return nil
 	})
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(green.Render(fmt.Sprintf("total matches: %d", matches)))
+	return nil
 }
 
 func savePathsToFile() error {
@@ -97,6 +106,7 @@ func savePathsToFile() error {
 func switchToRelativePath(nodeModules, localPath string) {
 	wd, _ := os.Getwd()
 
+	fmt.Println(blue.Render("looking in ", wd))
 	if err := walkThroughFiles(wd, nodeModules, localPath); err != nil {
 		fmt.Printf("Error walking through files: %v\n", err)
 	}
